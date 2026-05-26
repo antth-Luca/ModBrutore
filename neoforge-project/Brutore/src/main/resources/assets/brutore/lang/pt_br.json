@@ -1,13 +1,3 @@
 {
-  "itemGroup.brutore": "Example Mod Tab",
-  "block.brutore.example_block": "Example Block",
-  "item.brutore.example_item": "Example Item",
-
-  "brutore.configuration.title": "Brutore Configs",
-  "brutore.configuration.section.brutore.common.toml": "Brutore Configs",
-  "brutore.configuration.section.brutore.common.toml.title": "Brutore Configs",
-  "brutore.configuration.items": "Item List",
-  "brutore.configuration.logDirtBlock": "Log Dirt Block",
-  "brutore.configuration.magicNumberIntroduction": "Magic Number Text",
-  "brutore.configuration.magicNumber": "Magic Number"
+  "block.brutore.raw_inator": "Des-minera-inator"
 }

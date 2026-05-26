@@ -1,0 +1,8 @@
+{
+  "variants": {
+    "facing=north": { "model": "brutore:block/raw_inator" },
+    "facing=south": { "model": "brutore:block/raw_inator", "y": 180 },
+    "facing=west":  { "model": "brutore:block/raw_inator", "y": 270 },
+    "facing=east":  { "model": "brutore:block/raw_inator", "y": 90 }
+  }
+}
