@@ -1,7 +1,7 @@
 package io.github.antthluca.brutore.init;
 
 import io.github.antthluca.brutore.Brutore;
-import io.github.antthluca.brutore.blocks.RawInatorBlock;
+import io.github.antthluca.brutore.blocks.custom.RawInatorBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.SoundType;
 import net.minecraft.world.level.material.MapColor;
