@@ -1,0 +1,19 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "pattern": [
+    "IGI",
+    "CIC",
+    "BHB"
+  ],
+  "key": {
+    "I": "minecraft:iron_ingot",
+    "G": "minecraft:glass_pane",
+    "C": "minecraft:coal_block",
+    "B": "minecraft:iron_block",
+    "H": "minecraft:hopper"
+  },
+  "result": {
+    "id": "brutore:raw_inator",
+    "count": 1
+  }
+}

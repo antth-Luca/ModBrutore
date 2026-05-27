@@ -17,7 +17,7 @@ public class InitBlocks {
             "raw_inator", (prop) -> new RawInatorBlock(prop
                     .mapColor(MapColor.METAL)
                     .requiresCorrectToolForDrops()
-                    .strength(5.0F, 1200.0F)
+                    .strength(2.5F, 1200.0F)
                     .sound(SoundType.ANVIL)
                     .pushReaction(PushReaction.BLOCK)
             ));
