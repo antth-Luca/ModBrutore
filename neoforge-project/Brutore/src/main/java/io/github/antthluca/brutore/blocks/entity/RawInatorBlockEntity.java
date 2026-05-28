@@ -1,7 +1,9 @@
 package io.github.antthluca.brutore.blocks.entity;
 
 import io.github.antthluca.brutore.init.InitBlockEntities;
+import io.github.antthluca.brutore.init.InitRecipes;
 import io.github.antthluca.brutore.recipes.custom.RawInatorRecipe;
+import io.github.antthluca.brutore.recipes.input.RawInatorRecipeInput;
 import io.github.antthluca.brutore.screens.menu.RawInatorMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
@@ -10,6 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.Packet;
 import net.minecraft.network.protocol.game.ClientGamePacketListener;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.Containers;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.SimpleContainer;
@@ -183,7 +186,10 @@ public class RawInatorBlockEntity extends BlockEntity implements MenuProvider {
         maxProgress = DEFAULT_MAX_PROGRESS;
     }
 
-    private Optional<RecipeHolder<RawInatorRecipe>> getCurrentRecipe() { return Optional.empty(); }
+    private Optional<RecipeHolder<RawInatorRecipe>> getCurrentRecipe() {
+        return ((ServerLevel) this.level).recipeAccess()
+                .getRecipeFor(InitRecipes.RAW_INATOR_TYPE.get(), new RawInatorRecipeInput(itemHandler.getStackInSlot(INPUT_SLOT)), level);
+    }
 
     private boolean canInsertItemIntoOutputSlot(ItemStack output) {
         return itemHandler.getStackInSlot(OUTPUT_SLOT).isEmpty() ||

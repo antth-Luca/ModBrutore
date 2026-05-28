@@ -1,7 +1,0 @@
-{
-  "type": "brutore:raw_inator",
-  "ingredient": "minecraft:diamond",
-  "result": {
-    "id": "minecraft:diamond_block"
-  }
-}

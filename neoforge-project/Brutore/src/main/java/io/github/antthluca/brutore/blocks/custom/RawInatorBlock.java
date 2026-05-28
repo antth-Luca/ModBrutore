@@ -38,6 +38,11 @@ public class RawInatorBlock extends BaseEntityBlock {
     }
 
     @Override
+    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
+        return new RawInatorBlockEntity(pos, state);
+    }
+
+    @Override
     public BlockState getStateForPlacement(BlockPlaceContext ctx) {
         return this.defaultBlockState().setValue(FACING, ctx.getHorizontalDirection().getOpposite());
     }
@@ -61,14 +66,10 @@ public class RawInatorBlock extends BaseEntityBlock {
         return InteractionResult.SUCCESS;
     }
 
-    // IMPLEMENTS
-    public BlockEntity newBlockEntity(BlockPos pos, BlockState state) {
-        return new RawInatorBlockEntity(pos, state);
-    }
-
+    @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(Level level, BlockState state, BlockEntityType<T> blockEntityType) {
         return level.isClientSide() ? null : createTickerHelper(blockEntityType, InitBlockEntities.RAW_INATOR_BE.get(),
-                (bLevel, pos, blockState, blockEntity) -> blockEntity.tick(bLevel, pos, blockState));
+                (bLevel, bPos, bState, blockEntity) -> blockEntity.tick(bLevel, bPos, bState));
     }
 
     // MAIN
