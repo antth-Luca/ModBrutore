@@ -1,5 +1,6 @@
 package io.github.antthluca.brutore;
 
+import io.github.antthluca.brutore.init.InitBlockEntities;
 import io.github.antthluca.brutore.init.InitBlockItems;
 import io.github.antthluca.brutore.init.InitBlocks;
 
@@ -17,6 +18,7 @@ public class Brutore {
     public Brutore(IEventBus bus, ModContainer container) {
         // Init
         InitBlocks.BLOCKS.register(bus);
+        InitBlockEntities.BLOCK_ENTITIES.register(bus);
         InitBlockItems.BLOCK_ITEMS.register(bus);
         InitRecipes.SERIALIZERS.register(bus);
         InitRecipes.TYPES.register(bus);

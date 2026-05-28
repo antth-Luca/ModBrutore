@@ -24,6 +24,6 @@ public class InitRecipes {
             RecipeType<RawInatorRecipe>> RAW_INATOR_TYPE = TYPES.register(
                     "raw_inator_type", () -> new RecipeType<RawInatorRecipe>() {
                         @Override
-                public String toString() { return "raw_inator_type" }
+                public String toString() { return "raw_inator_type"; }
             });
 }
