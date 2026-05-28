@@ -2,6 +2,7 @@ package io.github.antthluca.brutore.blocks.entity;
 
 import io.github.antthluca.brutore.init.InitBlockEntities;
 import io.github.antthluca.brutore.recipes.custom.RawInatorRecipe;
+import io.github.antthluca.brutore.screens.menu.RawInatorMenu;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
@@ -87,7 +88,7 @@ public class RawInatorBlockEntity extends BlockEntity implements MenuProvider {
 
     @Override
     public AbstractContainerMenu createMenu(int i, Inventory inventory, Player player) {
-        return null;
+        return new RawInatorMenu(i, inventory, this, this.data);
     }
 
     @Override

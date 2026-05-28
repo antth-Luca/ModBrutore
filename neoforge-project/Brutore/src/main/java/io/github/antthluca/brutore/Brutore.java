@@ -1,10 +1,7 @@
 package io.github.antthluca.brutore;
 
-import io.github.antthluca.brutore.init.InitBlockEntities;
-import io.github.antthluca.brutore.init.InitBlockItems;
-import io.github.antthluca.brutore.init.InitBlocks;
+import io.github.antthluca.brutore.init.*;
 
-import io.github.antthluca.brutore.init.InitRecipes;
 import net.minecraft.world.item.CreativeModeTabs;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
@@ -22,6 +19,7 @@ public class Brutore {
         InitBlockItems.BLOCK_ITEMS.register(bus);
         InitRecipes.SERIALIZERS.register(bus);
         InitRecipes.TYPES.register(bus);
+        InitMenuTypes.MENU_TYPES.register(bus);
         // Register the item to a Vanilla Creative Tab
         bus.addListener(this::addCreative);
     }
