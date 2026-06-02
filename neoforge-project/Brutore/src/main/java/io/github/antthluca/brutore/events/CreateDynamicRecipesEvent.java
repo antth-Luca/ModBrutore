@@ -4,7 +4,6 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import io.github.antthluca.brutore.Brutore;
 import io.github.antthluca.brutore.recipes.custom.RawInatorRecipe;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
@@ -32,8 +31,7 @@ public class CreateDynamicRecipesEvent {
     public static void onAddReloadListeners(AddServerReloadListenersEvent event) {
         ReloadableServerResources serverResources = event.getServerResources();
         PreparableReloadListener dynamicReloader = new DynamicRecipeReloader(
-                serverResources.getRecipeManager(),
-                serverResources.getRegistryLookup()
+                serverResources.getRecipeManager()
         );
 
         event.addListener(
@@ -43,8 +41,10 @@ public class CreateDynamicRecipesEvent {
     }
 
     public static class DynamicRecipeReloader extends SimplePreparableReloadListener<Void> {
+        private static final TagKey<Item> C_ORES_TAG = TagKey.create(
+                Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "ores"));
+
         private final RecipeManager recipeManager;
-        private final HolderLookup.Provider registryAccess;
 
         // SUPER
         @Override
@@ -54,74 +54,69 @@ public class CreateDynamicRecipesEvent {
         @Override
         @SuppressWarnings("unchecked")
         protected void apply(Void unused, ResourceManager resourceManager, ProfilerFiller profilerFiller) {
-            TagKey<Item> C_ORES_TAG = TagKey.create(
-                    Registries.ITEM, ResourceLocation.fromNamespaceAndPath("c", "ores"));
-
             try {
-                Field byNameField = RecipeManager.class.getDeclaredField("byName");
-                Field byTypeField = RecipeManager.class.getDeclaredField("byType");
-                byNameField.setAccessible(true);
+                Field byKeyField = RecipeMap.class.getDeclaredField("byKey");
+                Field byTypeField = RecipeMap.class.getDeclaredField("byType");
+                byKeyField.setAccessible(true);
                 byTypeField.setAccessible(true);
 
-                Map<ResourceLocation, RecipeHolder<?>> originalByName = (Map<ResourceLocation, RecipeHolder<?>>) byNameField.get(recipeManager);
-                Multimap<RecipeType<?>, RecipeHolder<?>> originalByType = (Multimap<RecipeType<?>, RecipeHolder<?>>) byTypeField.get(recipeManager);
+                Map<ResourceLocation, RecipeHolder<?>> originalbyKey = (Map<ResourceLocation, RecipeHolder<?>>) byKeyField.get(recipeManager.recipeMap());
+                Multimap<RecipeType<?>, RecipeHolder<?>> originalByType = (Multimap<RecipeType<?>, RecipeHolder<?>>) byTypeField.get(recipeManager.recipeMap());
 
-                Map<ResourceLocation, RecipeHolder<?>> newByName = new HashMap<>(originalByName);
+                Map<ResourceLocation, RecipeHolder<?>> newByKey = new HashMap<>(originalbyKey);
 
                 Collection<RecipeHolder<?>> smeltRecipes = originalByType.get(RecipeType.SMELTING);
                 Collection<RecipeHolder<?>> blastRecipes = originalByType.get(RecipeType.BLASTING);
 
                 for (RecipeHolder<?> holder : smeltRecipes) {
-                    processAndBuild(holder, C_ORES_TAG, newByName);
+                    processAndBuild(holder, newByKey);
                 }
 
                 for (RecipeHolder<?> holder : blastRecipes) {
-                    processAndBuild(holder, C_ORES_TAG, newByName);
+                    processAndBuild(holder, newByKey);
                 }
 
                 ImmutableMultimap.Builder<RecipeType<?>, RecipeHolder<?>> recipesByTypeBuilder = ImmutableMultimap.builder();
-                for (Map.Entry<ResourceLocation, RecipeHolder<?>> entry : newByName.entrySet()) {
+                for (Map.Entry<ResourceLocation, RecipeHolder<?>> entry : newByKey.entrySet()) {
                     recipesByTypeBuilder.put(entry.getValue().value().getType(), entry.getValue());
                 }
 
-                byNameField.set(recipeManager, newByName);
-                byTypeField.set(recipeManager, recipesByTypeBuilder.build());
+                byKeyField.set(recipeManager.recipes, newByKey);
+                byTypeField.set(recipeManager.recipes, recipesByTypeBuilder.build());
 
-                Brutore.LOGGER.info("Brutore: Carregadas com sucesso {} receitas no total (incluindo dinâmicas).", newByName.size());
+                Brutore.LOGGER.info("Brutore: Carregadas com sucesso {} receitas no total (incluindo dinâmicas).", newByKey.size());
             } catch(Exception e) {
                 Brutore.LOGGER.error("Erro crítico de reflexão ao injetar receitas dinâmicas: ", e);
             }
         }
 
         // MAIN
-        public DynamicRecipeReloader(RecipeManager recipeManager, HolderLookup.Provider registryAccess) {
+        public DynamicRecipeReloader(RecipeManager recipeManager) {
             this.recipeManager = recipeManager;
-            this.registryAccess = registryAccess;
         }
 
         public void processAndBuild(RecipeHolder<?> holder,
-                                    TagKey<Item> tag,
-                                    Map<ResourceLocation, RecipeHolder<?>> newByName) {
+                                    Map<ResourceLocation, RecipeHolder<?>> newByKey) {
             if (holder.value() instanceof AbstractCookingRecipe cookRecipe) {
-                Ingredient input = cookRecipe.input();
+                ItemStack output = cookRecipe.result;
 
-                if (!input.isEmpty()) {
-                    boolean hasOreTag = input.items()
-                            .anyMatch(holderItem -> holderItem.is(tag));
-
-                    if (hasOreTag) {
+                if (!output.isEmpty()) {
+                    if (output.is(C_ORES_TAG)) {
                         ResourceLocation newId = ResourceLocation.fromNamespaceAndPath(
                                 Brutore.MODID,
                                 holder.id().location().getPath() + "_to_raw_inator"
                         );
                         ResourceKey<Recipe<?>> recipeKey = ResourceKey.create(Registries.RECIPE, newId);
 
-                        ItemStack output = cookRecipe.result;
+                        Ingredient input = cookRecipe.input();
 
-                        RawInatorRecipe rawInatorRecipe = new RawInatorRecipe(input, output.copy());
+                        RawInatorRecipe rawInatorRecipe = new RawInatorRecipe(
+                                Ingredient.of(output.getItem()),
+                                new ItemStack(input.items().toList().get(0))
+                        );
                         RecipeHolder<RawInatorRecipe> newHolder = new RecipeHolder<>(recipeKey, rawInatorRecipe);
 
-                        newByName.put(newId, newHolder);
+                        newByKey.put(newId, newHolder);
                     }
                 }
             }
