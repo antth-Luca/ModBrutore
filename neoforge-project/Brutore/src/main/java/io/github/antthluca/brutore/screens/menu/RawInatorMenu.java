@@ -121,7 +121,9 @@ public class RawInatorMenu extends AbstractContainerMenu {
     public int getScaledLavaLevel() {
         int amount = getLavaAmount();
         int capacity = getLavaCapacity();
-        return capacity > 0 ? amount * 54 / capacity : 0;
+        int lavaPixelSize = 35;
+
+        return capacity != 0 && amount != 0 ? amount * lavaPixelSize / capacity : 0;
     }
 
     private void addPlayerInventory(Inventory playerInventory) {

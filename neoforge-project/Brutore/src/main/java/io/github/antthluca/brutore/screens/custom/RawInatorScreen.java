@@ -14,6 +14,8 @@ public class RawInatorScreen extends AbstractContainerScreen<RawInatorMenu> {
             "textures/gui/raw_inator/raw_inator_gui.png");
     private static final ResourceLocation ARROW_TEXTURE = ResourceLocation.fromNamespaceAndPath(Brutore.MODID,
             "textures/gui/raw_progress.png");
+    private static final ResourceLocation LAVA_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft",
+            "textures/block/lava_still.png");
 
     protected int imageHeight = 174;
 
@@ -54,17 +56,16 @@ public class RawInatorScreen extends AbstractContainerScreen<RawInatorMenu> {
 
     private void renderLavaLevel(GuiGraphics guiGraphics, int x, int y) {
         int scaled = menu.getScaledLavaLevel();
-        if (scaled <= 0) {
-            return;
-        }
+        if (scaled == 0) return;
 
-        int top = y + 21 + (35 - scaled);
-        guiGraphics.fill(x + 81, top, x + 96, y + 37, 0xFFFF6A00);
+        int top = y + 2 + (35 - scaled);
+
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, LAVA_TEXTURE, x + 81, top, 0, 35 - scaled,
+                15, scaled, 16, 320);
     }
 
     private void renderLavaText(GuiGraphics guiGraphics, int x, int y) {
         int lavaAmount = menu.getLavaAmount();
-
         if (lavaAmount != 0) return;
 
         guiGraphics.drawString(this.font, Component.translatable("block.brutore.raw_inator.empty_lava"),
