@@ -2,7 +2,7 @@
   "parent": "minecraft:block/cube",
   "textures": {
     "particle": "brutore:block/raw_inator_top",
-    "north": "brutore:block/raw_inator_front",
+    "north": "brutore:block/raw_inator_front_empty",
     "south": "brutore:block/raw_inator_back",
     "east": "brutore:block/raw_inator_side",
     "west": "brutore:block/raw_inator_side",

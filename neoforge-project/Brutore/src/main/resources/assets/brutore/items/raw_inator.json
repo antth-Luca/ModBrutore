@@ -1,6 +1,6 @@
 {
   "model": {
     "type": "minecraft:model",
-    "model": "brutore:block/raw_inator"
+    "model": "brutore:block/raw_inator_empty"
   }
 }

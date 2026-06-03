@@ -18,11 +18,13 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.BaseEntityBlock;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.HorizontalDirectionalBlock;
+import net.minecraft.world.level.BlockGetter;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.StateDefinition;
+import net.minecraft.world.level.block.state.properties.BooleanProperty;
 import net.minecraft.world.level.block.state.properties.EnumProperty;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.material.Fluids;
@@ -33,6 +35,7 @@ import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 public class RawInatorBlock extends BaseEntityBlock {
     public static final MapCodec<RawInatorBlock> CODEC = simpleCodec(RawInatorBlock::new);
     public static final EnumProperty<Direction> FACING = HorizontalDirectionalBlock.FACING;
+    public static final BooleanProperty HAS_LAVA = BooleanProperty.create("has_lava");
     public static final Component CONTAINER_TITLE = Component.translatable("block.brutore.raw_inator");
 
     // SUPER
@@ -48,12 +51,19 @@ public class RawInatorBlock extends BaseEntityBlock {
 
     @Override
     public BlockState getStateForPlacement(BlockPlaceContext ctx) {
-        return this.defaultBlockState().setValue(FACING, ctx.getHorizontalDirection().getOpposite());
+        return this.defaultBlockState()
+                .setValue(FACING, ctx.getHorizontalDirection().getOpposite())
+                .setValue(HAS_LAVA, false);
     }
 
     @Override
     protected void createBlockStateDefinition(StateDefinition.Builder<Block, BlockState> builder) {
-        builder.add(FACING);
+        builder.add(FACING, HAS_LAVA);
+    }
+
+    @Override
+    public int getLightEmission(BlockState state, BlockGetter level, BlockPos pos) {
+        return state.getValue(HAS_LAVA) ? 8 : 0;
     }
 
     @Override
@@ -98,6 +108,7 @@ public class RawInatorBlock extends BaseEntityBlock {
                     }
                 }
                 rawInatorBE.setChanged();
+                updateLavaState(level, pos, rawInatorBE);
                 level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
                 return true;
             }
@@ -113,6 +124,7 @@ public class RawInatorBlock extends BaseEntityBlock {
                     }
                 }
                 rawInatorBE.setChanged();
+                updateLavaState(level, pos, rawInatorBE);
                 level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
                 return true;
             }
@@ -129,10 +141,20 @@ public class RawInatorBlock extends BaseEntityBlock {
                         (bLevel, bPos, bState, blockEntity) -> blockEntity.tick(bLevel, bPos, bState));
     }
 
+    private void updateLavaState(Level level, BlockPos pos, RawInatorBlockEntity rawInatorBE) {
+        BlockState currentState = level.getBlockState(pos);
+        boolean hasLava = rawInatorBE.lavaTank.getFluidAmount() > 0;
+        if (currentState.getValue(HAS_LAVA) != hasLava) {
+            level.setBlock(pos, currentState.setValue(HAS_LAVA, hasLava), 3);
+        }
+    }
+
     // MAIN
     public RawInatorBlock(Properties prop) {
         super(prop);
 
-        this.registerDefaultState(this.getStateDefinition().any().setValue(FACING, Direction.NORTH));
+        this.registerDefaultState(this.getStateDefinition().any()
+                .setValue(FACING, Direction.NORTH)
+                .setValue(HAS_LAVA, false));
     }
 }

@@ -1,8 +1,34 @@
 {
   "variants": {
-    "facing=north": { "model": "brutore:block/raw_inator" },
-    "facing=south": { "model": "brutore:block/raw_inator", "y": 180 },
-    "facing=west":  { "model": "brutore:block/raw_inator", "y": 270 },
-    "facing=east":  { "model": "brutore:block/raw_inator", "y": 90 }
+    "has_lava=false,facing=north": {
+      "model": "brutore:block/raw_inator_empty"
+    },
+    "has_lava=false,facing=south": {
+      "model": "brutore:block/raw_inator_empty",
+      "y": 180
+    },
+    "has_lava=false,facing=west": {
+      "model": "brutore:block/raw_inator_empty",
+      "y": 270
+    },
+    "has_lava=false,facing=east": {
+      "model": "brutore:block/raw_inator_empty",
+      "y": 90
+    },
+    "has_lava=true,facing=north": { "model":
+      "brutore:block/raw_inator_lava"
+    },
+    "has_lava=true,facing=south": {
+      "model": "brutore:block/raw_inator_lava",
+      "y": 180
+    },
+    "has_lava=true,facing=west": {
+      "model": "brutore:block/raw_inator_lava",
+      "y": 270
+    },
+    "has_lava=true,facing=east": {
+      "model": "brutore:block/raw_inator_lava",
+      "y": 90
+    }
   }
 }

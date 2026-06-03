@@ -1,5 +1,6 @@
 package io.github.antthluca.brutore.blocks.entity;
 
+import io.github.antthluca.brutore.blocks.custom.RawInatorBlock;
 import io.github.antthluca.brutore.init.InitBlockEntities;
 import io.github.antthluca.brutore.init.InitRecipes;
 import io.github.antthluca.brutore.recipes.custom.RawInatorRecipe;
@@ -214,6 +215,11 @@ public class RawInatorBlockEntity extends BlockEntity
     }
 
     public void tick(Level level, BlockPos pos, BlockState state) {
+        boolean hasLava = lavaTank.getFluidAmount() > 0;
+        if (state.getValue(RawInatorBlock.HAS_LAVA) != hasLava) {
+            level.setBlock(pos, state.setValue(RawInatorBlock.HAS_LAVA, hasLava), 3);
+        }
+
         if (hasRecipe() && hasEnoughLava()) {
             increaseCraftingProcess();
             setChanged(level, pos, state);
