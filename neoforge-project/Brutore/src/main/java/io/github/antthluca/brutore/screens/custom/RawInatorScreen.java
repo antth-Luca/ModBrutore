@@ -12,8 +12,10 @@ import net.minecraft.world.entity.player.Inventory;
 public class RawInatorScreen extends AbstractContainerScreen<RawInatorMenu> {
     private static final ResourceLocation GUI_TEXTURE = ResourceLocation.fromNamespaceAndPath(Brutore.MODID,
             "textures/gui/raw_inator/raw_inator_gui.png");
-    private static final ResourceLocation ARROW_TEXTURE = ResourceLocation.fromNamespaceAndPath("minecraft",
-            "textures/gui/sprites/container/furnace/burn_progress.png");
+    private static final ResourceLocation ARROW_TEXTURE = ResourceLocation.fromNamespaceAndPath(Brutore.MODID,
+            "textures/gui/raw_progress.png");
+
+    protected int imageHeight = 174;
 
     // SUPER
     @Override
@@ -21,10 +23,11 @@ public class RawInatorScreen extends AbstractContainerScreen<RawInatorMenu> {
         int x = (width - imageWidth) / 2;
         int y = (height - imageHeight) / 2;
 
+        renderLavaLevel(guiGraphics, x, y);
+
         guiGraphics.blit(RenderPipelines.GUI_TEXTURED, GUI_TEXTURE, x, y, 0, 0, imageWidth, imageHeight, 256, 256);
 
         renderProgressArrow(guiGraphics, x, y);
-        renderLavaLevel(guiGraphics, x, y);
         renderLavaText(guiGraphics, x, y);
     }
 
@@ -37,11 +40,14 @@ public class RawInatorScreen extends AbstractContainerScreen<RawInatorMenu> {
     // MAIN
     public RawInatorScreen(RawInatorMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
+
+        this.titleLabelY = 2;
+        this.inventoryLabelY = this.imageHeight - 98;
     }
 
     private void renderProgressArrow(GuiGraphics guiGraphics, int x, int y) {
         if (menu.isCrafting()) {
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ARROW_TEXTURE, x + 73, y + 35, 0, 0,
+            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ARROW_TEXTURE, x + 76, y + 43, 0, 0,
                     menu.getScaledArrowProgress(), 16, 24, 16);
         }
     }
@@ -52,13 +58,16 @@ public class RawInatorScreen extends AbstractContainerScreen<RawInatorMenu> {
             return;
         }
 
-        int top = y + 16 + (54 - scaled);
-        guiGraphics.fill(x + 8, top, x + 22, y + 70, 0xFFFF6A00);
-        guiGraphics.fill(x + 9, top + 1, x + 21, y + 69, 0xFFFFB347);
+        int top = y + 21 + (35 - scaled);
+        guiGraphics.fill(x + 81, top, x + 96, y + 37, 0xFFFF6A00);
     }
 
     private void renderLavaText(GuiGraphics guiGraphics, int x, int y) {
-        guiGraphics.drawString(this.font, "Lava: " + menu.getLavaAmount() + "/" + menu.getLavaCapacity() + " mB",
-                x + 30, y + 14, 0xFFFFFFFF, false);
+        int lavaAmount = menu.getLavaAmount();
+
+        if (lavaAmount != 0) return;
+
+        guiGraphics.drawString(this.font, Component.translatable("block.brutore.raw_inator.empty_lava"),
+                x + 12, y + 18, -12566464, false);
     }
 }
