@@ -39,7 +39,8 @@ public class RawInatorMenu extends AbstractContainerMenu {
     @Override
     public ItemStack quickMoveStack(Player playerIn, int pIndex) {
         Slot sourceSlot = slots.get(pIndex);
-        if (sourceSlot == null || !sourceSlot.hasItem()) return ItemStack.EMPTY;  //EMPTY_ITEM
+        if (sourceSlot == null || !sourceSlot.hasItem())
+            return ItemStack.EMPTY; // EMPTY_ITEM
         ItemStack sourceStack = sourceSlot.getItem();
         ItemStack copyOfSourceStack = sourceStack.copy();
 
@@ -48,11 +49,12 @@ public class RawInatorMenu extends AbstractContainerMenu {
             // This is a vanilla container slot so merge the stack into the tile inventory
             if (!moveItemStackTo(sourceStack, TE_INVENTORY_FIRST_SLOT_INDEX, TE_INVENTORY_FIRST_SLOT_INDEX
                     + TE_INVENTORY_SLOT_COUNT, false)) {
-                return ItemStack.EMPTY;  // EMPTY_ITEM
+                return ItemStack.EMPTY; // EMPTY_ITEM
             }
         } else if (pIndex < TE_INVENTORY_FIRST_SLOT_INDEX + TE_INVENTORY_SLOT_COUNT) {
             // This is a TE slot so merge the stack into the players inventory
-            if (!moveItemStackTo(sourceStack, VANILLA_FIRST_SLOT_INDEX, VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT, false)) {
+            if (!moveItemStackTo(sourceStack, VANILLA_FIRST_SLOT_INDEX, VANILLA_FIRST_SLOT_INDEX + VANILLA_SLOT_COUNT,
+                    false)) {
                 return ItemStack.EMPTY;
             }
         } else {
@@ -77,7 +79,8 @@ public class RawInatorMenu extends AbstractContainerMenu {
 
     // MAIN
     public RawInatorMenu(int pContainerId, Inventory inv, FriendlyByteBuf extraData) {
-        this(pContainerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()), new SimpleContainerData(2));
+        this(pContainerId, inv, inv.player.level().getBlockEntity(extraData.readBlockPos()),
+                new SimpleContainerData(4));
     }
 
     public RawInatorMenu(int pContainerId, Inventory inv, BlockEntity entity, ContainerData data) {
@@ -105,6 +108,20 @@ public class RawInatorMenu extends AbstractContainerMenu {
         int arrowPixelSize = 24;
 
         return maxProgress != 0 && progress != 0 ? progress * arrowPixelSize / maxProgress : 0;
+    }
+
+    public int getLavaAmount() {
+        return this.data.get(2);
+    }
+
+    public int getLavaCapacity() {
+        return this.data.get(3);
+    }
+
+    public int getScaledLavaLevel() {
+        int amount = getLavaAmount();
+        int capacity = getLavaCapacity();
+        return capacity > 0 ? amount * 54 / capacity : 0;
     }
 
     private void addPlayerInventory(Inventory playerInventory) {
