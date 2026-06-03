@@ -7,6 +7,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvents;
+import net.minecraft.sounds.SoundSource;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.SimpleMenuProvider;
@@ -110,6 +112,16 @@ public class RawInatorBlock extends BaseEntityBlock {
                 rawInatorBE.setChanged();
                 updateLavaState(level, pos, rawInatorBE);
                 level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
+                if (!level.isClientSide()) {
+                    level.playSound(
+                        null,
+                        pos,
+                        SoundEvents.BUCKET_EMPTY_LAVA,
+                        SoundSource.BLOCKS,
+                        1.0F,
+                        1.0F
+                    );
+                }
                 return true;
             }
         }
@@ -126,6 +138,16 @@ public class RawInatorBlock extends BaseEntityBlock {
                 rawInatorBE.setChanged();
                 updateLavaState(level, pos, rawInatorBE);
                 level.sendBlockUpdated(pos, level.getBlockState(pos), level.getBlockState(pos), 3);
+                if (!level.isClientSide()) {
+                    level.playSound(
+                        null,
+                        pos,
+                        SoundEvents.BUCKET_FILL_LAVA,
+                        SoundSource.BLOCKS,
+                        1.0F,
+                        1.0F
+                    );
+                }
                 return true;
             }
         }
