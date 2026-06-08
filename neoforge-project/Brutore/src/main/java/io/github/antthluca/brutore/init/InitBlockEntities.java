@@ -14,7 +14,8 @@ public class InitBlockEntities {
 
     // Block Entities
     public static final Supplier<BlockEntityType<RawInatorBlockEntity>> RAW_INATOR_BE = BLOCK_ENTITIES.register(
-            "raw_inator_be", () -> new BlockEntityType<>(
+            "raw_inator_be", () -> BlockEntityType.Builder.of(
                     RawInatorBlockEntity::new,
-                    InitBlocks.RAW_INATOR.get()));
+                    InitBlocks.RAW_INATOR.get()
+            ).build(null));
 }

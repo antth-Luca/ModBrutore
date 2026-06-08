@@ -32,7 +32,6 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.transfer.fluid.FluidUtil;
 
 public class RawInatorBlock extends BaseEntityBlock {
     public static final MapCodec<RawInatorBlock> CODEC = simpleCodec(RawInatorBlock::new);
@@ -69,14 +68,12 @@ public class RawInatorBlock extends BaseEntityBlock {
     }
 
     @Override
-    protected InteractionResult useItemOn(ItemStack stack, BlockState state, Level level, BlockPos pos, Player player,
-            InteractionHand hand, BlockHitResult hitResult) {
+    protected InteractionResult useWithoutItem(BlockState state, Level level, BlockPos pos, Player player, BlockHitResult hitResult) {
         if (!level.isClientSide()) {
-            if (tryHandleLavaBucket(player, hand, level, pos, stack)) {
-                return InteractionResult.SUCCESS;
-            }
+            InteractionHand hand = player.getUsedItemHand();
+            ItemStack stack = player.getItemInHand(hand);
 
-            if (FluidUtil.interactWithFluidHandler(player, hand, level, pos, Direction.UP)) {
+            if (tryHandleLavaBucket(player, hand, level, pos, stack)) {
                 return InteractionResult.SUCCESS;
             }
 

@@ -27,17 +27,12 @@ import net.minecraft.world.item.crafting.RecipeHolder;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.storage.ValueInput;
-import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.BlockCapability;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.capabilities.ICapabilityProvider;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 import net.neoforged.neoforge.fluids.capability.templates.FluidTank;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -75,43 +70,6 @@ public class RawInatorBlockEntity extends BlockEntity
             if (level != null && !level.isClientSide()) {
                 level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), 3);
             }
-        }
-    };
-
-    public final ResourceHandler<FluidResource> fluidHandler = new ResourceHandler<>() {
-        @Override
-        public int size() {
-            return 1;
-        }
-
-        @Override
-        public FluidResource getResource(int slot) {
-            return FluidResource.of(lavaTank.getFluid());
-        }
-
-        @Override
-        public long getAmountAsLong(int slot) {
-            return lavaTank.getFluidAmount();
-        }
-
-        @Override
-        public long getCapacityAsLong(int slot, FluidResource resource) {
-            return lavaTank.getCapacity();
-        }
-
-        @Override
-        public boolean isValid(int slot, FluidResource resource) {
-            return resource.getFluid() == net.minecraft.world.level.material.Fluids.LAVA;
-        }
-
-        @Override
-        public int insert(int slot, FluidResource resource, int amount, TransactionContext transaction) {
-            return lavaTank.fill(resource.toStack(amount), IFluidHandler.FluidAction.EXECUTE);
-        }
-
-        @Override
-        public int extract(int slot, FluidResource resource, int amount, TransactionContext transaction) {
-            return lavaTank.drain(resource.toStack(amount), IFluidHandler.FluidAction.EXECUTE).getAmount();
         }
     };
 
@@ -155,8 +113,8 @@ public class RawInatorBlockEntity extends BlockEntity
 
     @Override
     public Object getCapability(BlockCapability<?, Direction> cap, Direction side) {
-        if (cap == Capabilities.Fluid.BLOCK) {
-            return fluidHandler;
+        if (cap == Capabilities.FluidHandler.BLOCK) {
+            return lavaTank;
         }
         return null;
     }
@@ -167,29 +125,31 @@ public class RawInatorBlockEntity extends BlockEntity
     }
 
     @Override
-    public void preRemoveSideEffects(BlockPos pos, BlockState state) {
+    public void setRemoved() {
         drops();
-        super.preRemoveSideEffects(pos, state);
+        super.setRemoved();
     }
 
     @Override
-    protected void saveAdditional(ValueOutput output) {
-        itemHandler.serialize(output);
-        lavaTank.serialize(output);
-        output.putInt(tagNameProgress, progress);
-        output.putInt(tagNameMaxProgress, maxProgress);
-
-        super.saveAdditional(output);
+    protected void saveAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.saveAdditional(tag, registries);
+        tag.put("inventory", itemHandler.serializeNBT(registries));
+        tag.put("lavaTank", lavaTank.writeToNBT(registries, new CompoundTag()));
+        tag.putInt(tagNameProgress, progress);
+        tag.putInt(tagNameMaxProgress, maxProgress);
     }
 
     @Override
-    protected void loadAdditional(ValueInput input) {
-        super.loadAdditional(input);
-
-        itemHandler.deserialize(input);
-        lavaTank.deserialize(input);
-        progress = input.getIntOr(tagNameProgress, 0);
-        maxProgress = input.getIntOr(tagNameMaxProgress, 0);
+    protected void loadAdditional(CompoundTag tag, HolderLookup.Provider registries) {
+        super.loadAdditional(tag, registries);
+        if (tag.contains("inventory")) {
+            itemHandler.deserializeNBT(registries, tag.getCompound("inventory"));
+        }
+        if (tag.contains("lavaTank")) {
+            lavaTank.readFromNBT(registries, tag.getCompound("lavaTank"));
+        }
+        progress = tag.getInt(tagNameProgress);
+        maxProgress = tag.getInt(tagNameMaxProgress);
     }
 
     @NotNull
@@ -281,7 +241,7 @@ public class RawInatorBlockEntity extends BlockEntity
             return Optional.empty();
         }
 
-        return serverLevel.recipeAccess()
+        return serverLevel.getRecipeManager()
                 .getRecipeFor(InitRecipes.RAW_INATOR_TYPE.get(),
                         new RawInatorRecipeInput(itemHandler.getStackInSlot(INPUT_SLOT)), level);
     }

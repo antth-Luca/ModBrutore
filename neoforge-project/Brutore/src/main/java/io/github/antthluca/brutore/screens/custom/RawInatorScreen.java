@@ -4,7 +4,6 @@ import io.github.antthluca.brutore.Brutore;
 import io.github.antthluca.brutore.screens.menu.RawInatorMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
-import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
@@ -27,7 +26,7 @@ public class RawInatorScreen extends AbstractContainerScreen<RawInatorMenu> {
 
         renderLavaLevel(guiGraphics, x, y);
 
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, GUI_TEXTURE, x, y, 0, 0, imageWidth, imageHeight, 256, 256);
+        guiGraphics.blit(GUI_TEXTURE, x, y, 0, 0, imageWidth, imageHeight, 256, 256);
 
         renderProgressArrow(guiGraphics, x, y);
         renderLavaText(guiGraphics, x, y);
@@ -49,7 +48,7 @@ public class RawInatorScreen extends AbstractContainerScreen<RawInatorMenu> {
 
     private void renderProgressArrow(GuiGraphics guiGraphics, int x, int y) {
         if (menu.isCrafting()) {
-            guiGraphics.blit(RenderPipelines.GUI_TEXTURED, ARROW_TEXTURE, x + 76, y + 43, 0, 0,
+            guiGraphics.blit(ARROW_TEXTURE, x + 76, y + 43, 0, 0,
                     menu.getScaledArrowProgress(), 16, 24, 16);
         }
     }
@@ -60,7 +59,7 @@ public class RawInatorScreen extends AbstractContainerScreen<RawInatorMenu> {
 
         int top = y + 2 + (35 - scaled);
 
-        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, LAVA_TEXTURE, x + 81, top, 0, 35 - scaled,
+        guiGraphics.blit(LAVA_TEXTURE, x + 81, top, 0, 35 - scaled,
                 15, scaled, 16, 320);
     }
 

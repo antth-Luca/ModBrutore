@@ -8,14 +8,19 @@ import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.data.event.GatherDataEvent;
 
-@EventBusSubscriber(modid = Brutore.MODID)
+@EventBusSubscriber(modid = Brutore.MODID, bus = EventBusSubscriber.Bus.MOD)
 public class BrutoreDataGeneration {
     @SubscribeEvent
-    public static void gatherClientData(GatherDataEvent.Client event) {
+    public static void gatherClientData(GatherDataEvent event) {
         DataGenerator gen = event.getGenerator();
         PackOutput out = gen.getPackOutput();
         var lookup = event.getLookupProvider();
 
-        gen.addProvider(true, new BrutoreBlockTagsProvider(out, lookup));
+        gen.addProvider(true, new BrutoreBlockTagsProvider(
+                out,
+                lookup,
+                Brutore.MODID,
+                event.getExistingFileHelper()
+        ));
     }
 }

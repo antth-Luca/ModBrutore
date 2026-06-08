@@ -6,13 +6,15 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.data.PackOutput;
 import net.minecraft.tags.BlockTags;
 import net.neoforged.neoforge.common.data.BlockTagsProvider;
+import net.neoforged.neoforge.common.data.ExistingFileHelper;
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.concurrent.CompletableFuture;
 
 public class BrutoreBlockTagsProvider extends BlockTagsProvider {
-    public BrutoreBlockTagsProvider(PackOutput out, CompletableFuture<HolderLookup.Provider> lookup) {
-        super(out, lookup, Brutore.MODID);
+    public BrutoreBlockTagsProvider(PackOutput output, CompletableFuture<HolderLookup.Provider> lookupProvider, String modId, @Nullable ExistingFileHelper existingFileHelper) {
+        super(output, lookupProvider, modId, existingFileHelper);
     }
 
     @Override

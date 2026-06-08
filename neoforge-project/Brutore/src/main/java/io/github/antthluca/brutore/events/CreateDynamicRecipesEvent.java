@@ -3,6 +3,7 @@ package io.github.antthluca.brutore.events;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import io.github.antthluca.brutore.Brutore;
+import io.github.antthluca.brutore.init.InitRecipes;
 import io.github.antthluca.brutore.recipes.custom.RawInatorRecipe;
 import net.minecraft.core.Holder;
 import net.minecraft.core.registries.Registries;
@@ -19,7 +20,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.crafting.*;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.common.EventBusSubscriber;
-import net.neoforged.neoforge.event.AddServerReloadListenersEvent;
+import net.neoforged.neoforge.event.AddReloadListenerEvent;
 import net.neoforged.neoforge.event.TagsUpdatedEvent;
 
 import java.lang.reflect.Field;
@@ -34,15 +35,13 @@ public class CreateDynamicRecipesEvent {
     private static ReloadableServerResources currentServerResources;
 
     @SubscribeEvent
-    public static void onAddReloadListeners(AddServerReloadListenersEvent event) {
+    public static void onAddReloadListeners(AddReloadListenerEvent event) {
         ReloadableServerResources serverResources = event.getServerResources();
         currentServerResources = serverResources;
         PreparableReloadListener dynamicReloader = new DynamicRecipeReloader(
                 serverResources.getRecipeManager());
 
-        event.addListener(
-                ResourceLocation.fromNamespaceAndPath(Brutore.MODID, "dynamic_recipes"),
-                dynamicReloader);
+        event.addListener(dynamicReloader);
     }
 
     @SubscribeEvent
@@ -56,59 +55,59 @@ public class CreateDynamicRecipesEvent {
     @SuppressWarnings("unchecked")
     private static void injectDynamicRecipes(RecipeManager recipeManager) {
         try {
-            Field byKeyField = RecipeMap.class.getDeclaredField("byKey");
-            Field byTypeField = RecipeMap.class.getDeclaredField("byType");
-            byKeyField.setAccessible(true);
-            byTypeField.setAccessible(true);
+            Field recipesField = RecipeManager.class.getDeclaredField("recipes");
+            recipesField.setAccessible(true);
 
-            Map<ResourceLocation, RecipeHolder<?>> originalByKey = (Map<ResourceLocation, RecipeHolder<?>>) byKeyField
-                    .get(recipeManager.recipeMap());
-            Multimap<RecipeType<?>, RecipeHolder<?>> originalByType = (Multimap<RecipeType<?>, RecipeHolder<?>>) byTypeField
-                    .get(recipeManager.recipeMap());
+            Map<RecipeType<?>, Map<ResourceLocation, RecipeHolder<?>>> originalRecipes =
+                    (Map<RecipeType<?>, Map<ResourceLocation, RecipeHolder<?>>>) recipesField.get(recipeManager);
 
-            Map<ResourceLocation, RecipeHolder<?>> newByKey = new HashMap<>(originalByKey);
-
-            for (RecipeHolder<?> holder : originalByType.get(RecipeType.SMELTING)) {
-                processAndBuild(holder, newByKey);
+            Map<RecipeType<?>, Map<ResourceLocation, RecipeHolder<?>>> newRecipes = new HashMap<>();
+            for (Map.Entry<RecipeType<?>, Map<ResourceLocation, RecipeHolder<?>>> entry : originalRecipes.entrySet()) {
+                newRecipes.put(entry.getKey(), new HashMap<>(entry.getValue()));
             }
 
-            for (RecipeHolder<?> holder : originalByType.get(RecipeType.BLASTING)) {
-                processAndBuild(holder, newByKey);
+            Map<ResourceLocation, RecipeHolder<?>> rawInatorMap = newRecipes.computeIfAbsent(
+                    InitRecipes.RAW_INATOR_TYPE.get(), k -> new HashMap<>());
+
+            Map<ResourceLocation, RecipeHolder<?>> smeltingRecipes = newRecipes.get(RecipeType.SMELTING);
+            if (smeltingRecipes != null) {
+                for (RecipeHolder<?> holder : smeltingRecipes.values()) {
+                    processAndBuild(holder, rawInatorMap);
+                }
             }
 
-            ImmutableMultimap.Builder<RecipeType<?>, RecipeHolder<?>> recipesByTypeBuilder = ImmutableMultimap
-                    .builder();
-            for (Map.Entry<ResourceLocation, RecipeHolder<?>> entry : newByKey.entrySet()) {
-                recipesByTypeBuilder.put(entry.getValue().value().getType(), entry.getValue());
+            Map<ResourceLocation, RecipeHolder<?>> blastingRecipes = newRecipes.get(RecipeType.BLASTING);
+            if (blastingRecipes != null) {
+                for (RecipeHolder<?> holder : blastingRecipes.values()) {
+                    processAndBuild(holder, rawInatorMap);
+                }
             }
 
-            byKeyField.set(recipeManager.recipes, newByKey);
-            byTypeField.set(recipeManager.recipes, recipesByTypeBuilder.build());
+            recipesField.set(recipeManager, newRecipes);
 
-            Brutore.LOGGER.info("Brutore: dynamic injected recipes: {}", newByKey.size());
+            Brutore.LOGGER.info("Brutore: dynamic injected recipes: {}", newRecipes.size());
         } catch (Exception e) {
             Brutore.LOGGER.error("Brutore: Critical error when injecting dynamic recipes: {}", e.getMessage());
         }
     }
 
     private static void processAndBuild(RecipeHolder<?> holder,
-            Map<ResourceLocation, RecipeHolder<?>> newByKey) {
+            Map<ResourceLocation, RecipeHolder<?>> rawInatorMap) {
         if (holder.value() instanceof AbstractCookingRecipe cookRecipe) {
-            ItemStack output = cookRecipe.result;
-            Holder<Item> input = cookRecipe.input().items().toList().get(0);
+            ItemStack output = cookRecipe.getResultItem(null);
+            ItemStack input = cookRecipe.getIngredients().get(0).getItems()[0];
 
             if (!output.isEmpty() && input.is(C_ORES_TAG)) {
                 ResourceLocation newId = ResourceLocation.fromNamespaceAndPath(
                         Brutore.MODID,
-                        holder.id().location().getPath() + "_to_raw_inator");
-                ResourceKey<Recipe<?>> recipeKey = ResourceKey.create(Registries.RECIPE, newId);
+                        holder.id().getPath() + "_to_raw_inator");
 
                 RawInatorRecipe rawInatorRecipe = new RawInatorRecipe(
                         Ingredient.of(output.getItem()),
-                        new ItemStack(input));
-                RecipeHolder<RawInatorRecipe> newHolder = new RecipeHolder<>(recipeKey, rawInatorRecipe);
+                        new ItemStack(input.getItem()));
+                RecipeHolder<RawInatorRecipe> newHolder = new RecipeHolder<>(newId, rawInatorRecipe);
 
-                newByKey.put(newId, newHolder);
+                rawInatorMap.put(newId, newHolder);
             }
         }
     }

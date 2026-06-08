@@ -35,11 +35,20 @@ public record RawInatorRecipe(Ingredient input, ItemStack output) implements Rec
     }
 
     @Override
-    public PlacementInfo placementInfo() { return PlacementInfo.create(input); }
+    public NonNullList<Ingredient> getIngredients() {
+        NonNullList<Ingredient> list = NonNullList.create();
+        list.add(input);
+        return list;
+    }
 
     @Override
-    public RecipeBookCategory recipeBookCategory() {
-        return RecipeBookCategories.CRAFTING_MISC;
+    public ItemStack getResultItem(HolderLookup.Provider provider) {
+        return output;
+    }
+
+    @Override
+    public boolean canCraftInDimensions(int i, int i1) {
+        return true;
     }
 
     // IMPLEMENTS
@@ -60,12 +69,5 @@ public record RawInatorRecipe(Ingredient input, ItemStack output) implements Rec
 
         @Override
         public StreamCodec<RegistryFriendlyByteBuf, RawInatorRecipe> streamCodec() { return STREAM_CODEC; }
-    }
-
-    // MAIN
-    public NonNullList<Ingredient> getIngredients() {
-        NonNullList<Ingredient> list = NonNullList.create();
-        list.add(input);
-        return list;
     }
 }
