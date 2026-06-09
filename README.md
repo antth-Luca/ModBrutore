@@ -9,6 +9,7 @@ From the box of weird mods: Brutore — convert ores into raw form.
 This project is under license. [See license](https://github.com/antth-Luca/ModBrutore/blob/v1.0-mc1.21.10/LICENSE-en-us).
 
 ## Minecraft versions supported
+* 1.21.1;
 * 1.21.10.
 
 ## Find in this mod:
